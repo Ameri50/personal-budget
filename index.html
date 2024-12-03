@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,3 +48,54 @@
   <script src="script.js"></script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Estudiantes</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Sistema de Gestión de Estudiantes</h1>
+
+    <!-- Formulario para agregar estudiantes -->
+    <div class="form-container">
+      <input type="text" id="nombre" placeholder="Nombre del estudiante" />
+      <input type="text" id="calificaciones" placeholder="Calificaciones (separadas por coma)" />
+      <button onclick="agregarEstudiante()">Agregar Estudiante</button>
+    </div>
+
+    <!-- Búsqueda y Ordenamiento -->
+    <div class="search-container">
+      <input type="text" id="buscar" placeholder="Buscar por nombre" oninput="buscarEstudiantes()">
+      <button onclick="ordenarPorPromedio()">Ordenar por Promedio</button>
+    </div>
+
+    <!-- Tabla de estudiantes -->
+    <table id="tablaEstudiantes">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Promedio</th>
+          <th>Asistencia</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Aquí se generarán las filas dinámicamente -->
+      </tbody>
+    </table>
+
+    <!-- Reporte de rangos -->
+    <h3>Rangos de Estudiantes</h3>
+    <div id="rangos"></div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+>>>>>>> bd58d4decca2661ed504c725499a4532947e0368
