@@ -4,11 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi Presupuesto Personal</title>
-  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="container">
     <h1>Mi Presupuesto Personal</h1>
+    
+    <!-- Balance General -->
+    <div class="card balance-card">
+      <h2>Balance Total: $<span id="balance">0.00</span></h2>
+    </div>
+
     <!-- Formulario para nueva transacción -->
     <div class="card">
       <h2>Nueva Transacción</h2>
@@ -29,10 +36,29 @@
     <!-- Historial de transacciones -->
     <div class="card">
       <h2>Historial de Transacciones</h2>
-      <button id="sort-button">Ordenar por Monto</button>
+      <button id="filter-ingresos">Ver Ingresos</button>
+      <button id="filter-gastos">Ver Gastos</button>
+      <button id="filter-todos">Ver Todos</button>
       <ul id="transactions-list"></ul>
     </div>
+
+    <!-- Gráfico -->
+    <div class="card">
+      <h2>Distribución de Ingresos y Gastos</h2>
+      <canvas id="myChart"></canvas>
+    </div>
+
+    <!-- Exportar/Importar -->
+    <div class="card">
+      <h2>Exportar/Importar Datos</h2>
+      <button id="export-button">Exportar JSON</button>
+      <input type="file" id="import-button">
+    </div>
+
+    <!-- Tema Oscuro -->
+    <button id="theme-toggle">Alternar Tema Oscuro</button>
   </div>
-  <script src="app.js"></script>
+
+  <script src="script.js"></script>
 </body>
 </html>

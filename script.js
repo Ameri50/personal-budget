@@ -1,98 +1,97 @@
-// Arreglo para almacenar estudiantes
-let estudiantes = [];
+let transactions = [];
 
-// Función para agregar estudiantes
-function agregarEstudiante() {
-  const nombre = document.getElementById('nombre').value;
-  const calificacionesInput = document.getElementById('calificaciones').value;
+const balanceElement = document.getElementById('balance');
+const transactionsList = document.getElementById('transactions-list');
+const sortButton = document.getElementById('sort-button');
+const chartElement = document.getElementById('myChart');
+let chart;
 
-  // Validaciones básicas
-  if (!nombre || !calificacionesInput) {
-    alert('Por favor, ingresa el nombre y las calificaciones.');
+window.addEventListener('load', () => {
+  const savedTransactions = JSON.parse(localStorage.getItem('transactions')) || [];
+  transactions = savedTransactions;
+  actualizarHistorial();
+  actualizarBalance();
+  actualizarGrafico();
+});
+
+document.getElementById('transaction-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const monto = parseFloat(document.getElementById('amount').value);
+  const tipo = document.getElementById('type').value;
+
+  if (isNaN(monto) || monto <= 0) {
+    alert("Por favor ingresa un monto válido.");
     return;
   }
 
-  const calificaciones = calificacionesInput.split(',').map(Number);
-  
-  if (calificaciones.some(isNaN)) {
-    alert('Por favor, ingresa números válidos para las calificaciones.');
-    return;
-  }
+  transactions.push({ tipo, monto });
+  localStorage.setItem('transactions', JSON.stringify(transactions));
+  actualizarHistorial();
+  actualizarBalance();
+  actualizarGrafico();
+  e.target.reset();
+});
 
-  const promedio = calcularPromedio(calificaciones);
+document.getElementById('filter-ingresos').addEventListener('click', () => mostrarTransacciones('ingreso'));
+document.getElementById('filter-gastos').addEventListener('click', () => mostrarTransacciones('gasto'));
+document.getElementById('filter-todos').addEventListener('click', () => mostrarTransacciones());
 
-  const nuevoEstudiante = {
-    nombre: nombre,
-    calificaciones: calificaciones,
-    asistencia: true,
-    estado: promedio >= 70 ? 'Aprobado' : 'Reprobado'
+document.getElementById('export-button').addEventListener('click', () => {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", "transacciones.json");
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+});
+
+document.getElementById('import-button').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const importedTransactions = JSON.parse(event.target.result);
+    transactions = transactions.concat(importedTransactions);
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+    actualizarHistorial();
+    actualizarBalance();
+    actualizarGrafico();
   };
+  reader.readAsText(file);
+});
 
-  estudiantes.push(nuevoEstudiante);
-  actualizarTabla();
-  actualizarRangos();
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+});
+
+function actualizarBalance() {
+  const total = transactions.reduce((acc, t) => t.tipo === 'ingreso' ? acc + t.monto : acc - t.monto, 0);
+  balanceElement.textContent = total.toFixed(2);
 }
 
-// Función para calcular promedio
-function calcularPromedio(calificaciones) {
-  const total = calificaciones.reduce((acc, curr) => acc + curr, 0);
-  return (total / calificaciones.length).toFixed(2);
-}
-
-// Actualizar la tabla de estudiantes
-function actualizarTabla() {
-  const tabla = document.getElementById('tablaEstudiantes').getElementsByTagName('tbody')[0];
-  tabla.innerHTML = ''; // Limpiar tabla
-
-  estudiantes.forEach(estudiante => {
-    const fila = tabla.insertRow();
-    const promedio = calcularPromedio(estudiante.calificaciones);
-    fila.innerHTML = `
-      <td>${estudiante.nombre}</td>
-      <td>${promedio}</td>
-      <td>${estudiante.asistencia ? 'Presente' : 'Ausente'}</td>
-      <td>${estudiante.estado}</td>
-    `;
+function actualizarHistorial() {
+  transactionsList.innerHTML = '';
+  transactions.forEach(({ tipo, monto }) => {
+    const li = document.createElement('li');
+    li.textContent = `${tipo === 'ingreso' ? 'Ingreso' : 'Gasto'}: $${monto.toFixed(2)}`;
+    li.style.color = tipo === 'ingreso' ? 'green' : 'red';
+    transactionsList.appendChild(li);
   });
 }
 
-// Función para buscar estudiantes
-function buscarEstudiantes() {
-  const termino = document.getElementById('buscar').value.toLowerCase();
-  const resultados = estudiantes.filter(estudiante => estudiante.nombre.toLowerCase().includes(termino));
-  
-  const tabla = document.getElementById('tablaEstudiantes').getElementsByTagName('tbody')[0];
-  tabla.innerHTML = ''; // Limpiar tabla
+function actualizarGrafico() {
+  const ingresos = transactions.filter(t => t.tipo === 'ingreso').reduce((acc, t) => acc + t.monto, 0);
+  const gastos = transactions.filter(t => t.tipo === 'gasto').reduce((acc, t) => acc + t.monto, 0);
 
-  resultados.forEach(estudiante => {
-    const fila = tabla.insertRow();
-    const promedio = calcularPromedio(estudiante.calificaciones);
-    fila.innerHTML = `
-      <td>${estudiante.nombre}</td>
-      <td>${promedio}</td>
-      <td>${estudiante.asistencia ? 'Presente' : 'Ausente'}</td>
-      <td>${estudiante.estado}</td>
-    `;
+  if (chart) chart.destroy();
+  chart = new Chart(chartElement.getContext('2d'), {
+    type: 'pie',
+    data: {
+      labels: ['Ingresos', 'Gastos'],
+      datasets: [{
+        data: [ingresos, gastos],
+        backgroundColor: ['green', 'red'],
+      }],
+    },
   });
-}
-
-// Función para ordenar por promedio
-function ordenarPorPromedio() {
-  estudiantes.sort((a, b) => calcularPromedio(b.calificaciones) - calcularPromedio(a.calificaciones));
-  actualizarTabla();
-}
-
-// Actualizar rangos de estudiantes
-function actualizarRangos() {
-  const rangosDiv = document.getElementById('rangos');
-  rangosDiv.innerHTML = ''; // Limpiar
-
-  const aprobados = estudiantes.filter(e => e.estado === 'Aprobado').length;
-  const reprobados = estudiantes.filter(e => e.estado === 'Reprobado').length;
-
-  rangosDiv.innerHTML = `
-    <p>Total de estudiantes: ${estudiantes.length}</p>
-    <p>Estudiantes aprobados: ${aprobados}</p>
-    <p>Estudiantes reprobados: ${reprobados}</p>
-  `;
 }
